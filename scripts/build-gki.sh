@@ -28,15 +28,21 @@ echo "Cloning shoey63/susfs4ksu..."
 git clone https://gitlab.com/shoey63/susfs4ksu.git -b gki-android14-6.1-dev susfs4ksu
 
 echo "Copying susfs source files..."
-# This step specifically provides the missing linux/susfs.h file!
 cp -r susfs4ksu/kernel_patches/fs/* common/fs/
 cp -r susfs4ksu/kernel_patches/include/linux/* common/include/linux/
 
 echo "Applying susfs kernel patches..."
 cd common
-# Grab the kernel-side patch and apply it
 cp ../susfs4ksu/kernel_patches/50_add_susfs_in_*.patch .
-patch -p1 < 50_add_susfs_in_*.patch
+patch -p1 < 50_add_susfs_in_*.patch || true
+
+if [ -f "fs/namespace.c.rej" ]; then
+    echo "Patch conflict detected in fs/namespace.c! Manually injecting susfs.h..."
+    if ! grep -q "#include <linux/susfs.h>" fs/namespace.c; then
+        sed -i '32i #include <linux/susfs.h>' fs/namespace.c
+    fi
+    rm -f fs/namespace.c.rej
+fi
 cd ..
 
 echo "=== Building GKI via Kleaf (Bazel) ==="

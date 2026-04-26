@@ -46,11 +46,14 @@ fi
 cd ..
 
 echo "=== Configuring KSU & SUSFS for Kleaf ==="
-# 1. Strip any existing 'default y' or 'default n' lines from the KSU Kconfig so we don't create syntax errors
+# 1. Strip any existing 'default y' or 'default n' lines from the KSU Kconfig
 sed -i '/default [yn]/d' KernelSU-Next/kernel/Kconfig || true
 
-# 2. Forcefully inject 'default y' immediately after every 'config' declaration in the file
+# 2. Forcefully inject 'default y' immediately after every 'config' declaration
 sed -i 's/^config .*/&\n\tdefault y/g' KernelSU-Next/kernel/Kconfig || true
+
+echo "=== Building GKI via Kleaf (Bazel) ==="
+tools/bazel run --color=no --curses=no //common:kernel_aarch64_dist -- --dist_dir="${DIST_DIR}" 2>&1 | tee build.log
 
 echo "=== Preparing Artifacts ==="
 mv "${DIST_DIR}/Image" ./Image

@@ -12,18 +12,32 @@ echo "Neutralizing ABI protected exports for Pixel compatibility..."
 > common/android/abi_gki_protected_exports_x86_64
 
 echo "=== Integrating KernelSU-Next ==="
-# Clone your specific fork and branch into the workspace
 echo "Cloning shoey63/KernelSU-Next (branch: pixel9-susfs-gki-android14-6.1)..."
 git clone https://github.com/shoey63/KernelSU-Next.git -b pixel9-susfs-gki-android14-6.1 KernelSU-Next
 
-# Run the setup script directly from your cloned fork
 echo "Running KernelSU-Next setup..."
 bash KernelSU-Next/kernel/setup.sh
 
-# Restore the custom branch!
 echo "Restoring the custom pixel9-susfs branch..."
 cd KernelSU-Next
 git checkout pixel9-susfs-gki-android14-6.1
+cd ..
+
+echo "=== Integrating susfs4ksu ==="
+echo "Cloning shoey63/susfs4ksu (branch: gki-android14-6.1-dev)..."
+git clone https://gitlab.com/shoey63/susfs4ksu.git -b gki-android14-6.1-dev susfs4ksu
+
+echo "Copying susfs source files..."
+# Copies the susfs drivers and headers into the kernel tree
+cp -r susfs4ksu/kernel_patches/fs/* common/fs/
+cp -r susfs4ksu/kernel_patches/include/linux/* common/include/linux/
+
+echo "Applying susfs kernel patches..."
+cd common
+# Grab the kernel-side patch and apply it
+# Using a wildcard dynamically targets the '50_add_susfs_in_...' patch for your specific branch
+cp ../susfs4ksu/kernel_patches/50_add_susfs_in_*.patch .
+patch -p1 < 50_add_susfs_in_*.patch
 cd ..
 
 echo "=== Building GKI via Kleaf (Bazel) ==="

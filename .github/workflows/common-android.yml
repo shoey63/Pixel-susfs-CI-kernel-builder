@@ -14,17 +14,39 @@ jobs:
       - name: Free Disk Space (Ubuntu)
         uses: jlumbroso/free-disk-space@main
         with:
-          # This deletes everything we don't need for a kernel build
-          tool-cache: true
+          # Loosened: We only remove the biggest offenders (.NET and Android SDK) to guarantee enough space for Kleaf
+          tool-cache: false
           android: true
           dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
+          haskell: false
+          large-packages: false
+          docker-images: false
           swap-storage: false
 
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git curl python3 rsync
+
+      - name: Setup 'repo' tool
+        run: |
+          mkdir -p ~/.bin
+          curl https://storage.googleapis.com/git-repo-downloads/repo > ~/.bin/repo
+          chmod a+rx ~/.bin/repo
+          echo "$HOME/.bin" >> $GITHUB_PATH
+
+      - name: Initialize and Sync AOSP Kernel Source
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git config --global color.ui false
+          mkdir -p workspace
+          cd workspace
+          repo init -u https://android.googlesource.com/kernel/manifest -b common-android14-6.1-2026-03 --depth=1
+          repo sync -c -j$(nproc) --no-clone-bundle --no-tags
 
       - name: Execute Build Script
         run: bash scripts/build-gki.sh
@@ -34,6 +56,6 @@ jobs:
         with:
           name: gki-aarch64-image
           path: |
-            workspace/out/dist/Image
+            workspace/Image
             workspace/build.log
           if-no-files-found: error

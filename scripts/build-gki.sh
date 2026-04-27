@@ -43,7 +43,7 @@ sed -i '/default [yn]/d' common/drivers/kernelsu/Kconfig || true
 sed -i 's/^config .*/&\n\tdefault y/g' common/drivers/kernelsu/Kconfig || true
 
 echo "=== Integrating susfs4ksu ==="
-# Pointing back to your stable, patched branch!
+# Pointing to the stable branch!
 git clone https://gitlab.com/shoey63/susfs4ksu.git -b gki-android14-6.1-dev susfs4ksu
 
 cp -r susfs4ksu/kernel_patches/fs/* common/fs/
@@ -52,11 +52,47 @@ cp -r susfs4ksu/kernel_patches/include/linux/* common/include/linux/
 echo "Applying susfs kernel patches..."
 cd common
 cp ../susfs4ksu/kernel_patches/50_add_susfs_in_*.patch .
+# We use '|| true' so the build doesn't die when Pixel trace hooks reject a hunk
 patch -p1 < 50_add_susfs_in_*.patch || true
+
+echo "=== Dynamically injecting rejected patch hunks ==="
+
+# Fix 1: fs/namespace.c (Missing includes)
+sed -i '/#include <linux\/mnt_idmapping.h>/a \
+#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT\n\
+#include <linux\/susfs_def.h>\n\
+#endif \/\/ #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT' fs/namespace.c
+
+# Fix 2: fs/namespace.c (Missing declarations)
+sed -i '/static unsigned int sysctl_mount_max/i \
+#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT\n\
+extern bool susfs_is_current_ksu_domain(void);\n\
+extern struct static_key_false susfs_set_sdcard_android_data_decrypted_key_false;\n\
+#define CL_COPY_MNT_NS BIT(25) \/* used by copy_mnt_ns() *\/\n\
+static DEFINE_IDA(susfs_mnt_id_ida);\n\
+static DEFINE_IDA(susfs_mnt_group_ida);\n\
+#endif \/\/ #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT\n' fs/namespace.c
+
+# Fix 3: fs/devpts/inode.c (Missing extern)
+sed -i '/devpts_get_priv -- get private data for a slave/i \
+#ifdef CONFIG_KSU_SUSFS\n\
+extern int ksu_handle_devpts(struct inode*);\n\
+#endif\n' fs/devpts/inode.c
+
+# Fix 4: fs/devpts/inode.c (Missing devpts hook)
+sed -i '/if (dentry->d_sb->s_magic != DEVPTS_SUPER_MAGIC)/i \
+#ifdef CONFIG_KSU_SUSFS\n\
+\tif (likely(susfs_is_current_proc_umounted())) {\n\
+\t\tgoto orig_flow;\n\
+\t}\n\
+\tksu_handle_devpts(dentry->d_inode);\n\
+orig_flow:\n\
+#endif\n' fs/devpts/inode.c
+
 cd ..
 
 echo "=== Building GKI via Kleaf (Bazel) ==="
-# Passing KSU versions cleanly through the sandbox
+# Passing the KSU variables directly into the Bazel sandbox
 tools/bazel run --color=no --curses=no \
   --action_env=KSU_VERSION_TAG="$KSU_TAG" \
   --action_env=KSU_GIT_VERSION="$KSU_HASH" \
@@ -66,7 +102,6 @@ echo "=== Preparing Artifacts ==="
 mv "${DIST_DIR}/Image" ./Image
 
 echo "=== Fetching Stock Boot Image ==="
-# !!! REPLACE THIS URL WITH YOUR SPECIFIC OTA LINK !!!
 python3 scripts/ota_pull.py \
   --source "https://dl.google.com/dl/android/aosp/komodo-ota-cp1a.260405.005-62a6d5ce.zip" \
   --partition boot \

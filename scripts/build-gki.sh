@@ -79,16 +79,6 @@ sed -i '/devpts_get_priv -- get private data for a slave/i \
 extern int ksu_handle_devpts(struct inode*);\n\
 #endif\n' fs/devpts/inode.c
 
-# Fix 4: fs/devpts/inode.c (Missing devpts hook)
-sed -i '/if (dentry->d_sb->s_magic != DEVPTS_SUPER_MAGIC)/i \
-#ifdef CONFIG_KSU_SUSFS\n\
-\tif (likely(susfs_is_current_proc_umounted())) {\n\
-\t\tgoto orig_flow;\n\
-\t}\n\
-\tksu_handle_devpts(dentry->d_inode);\n\
-orig_flow:\n\
-#endif\n' fs/devpts/inode.c
-
 cd ..
 
 echo "=== Building GKI via Kleaf (Bazel) ==="

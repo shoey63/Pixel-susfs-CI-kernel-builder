@@ -50,7 +50,7 @@ jobs:
 
       - name: Execute Build Script
         run: bash scripts/build-gki.sh
-
+        
       - name: Upload Image and Log
         uses: actions/upload-artifact@v4
         with:
@@ -58,4 +58,5 @@ jobs:
           path: |
             workspace/Image
             workspace/build.log
+            workspace/out/dist/pixel9-susfs-patched-boot.img
           if-no-files-found: error

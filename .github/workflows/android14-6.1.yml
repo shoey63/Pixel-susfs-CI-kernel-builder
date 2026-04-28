@@ -55,6 +55,7 @@ jobs:
 
       - name: Sync kernel source
         run: |
+          set -euo pipefail
           rm -rf kernel_workspace
           mkdir -p kernel_workspace
           cd kernel_workspace

@@ -1,25 +1,29 @@
 name: Android 14 6.1 - Common Kernel + Repacked Boot
-run-name: "${{ github.event.head_commit.message || format('Manual Build: {0}', inputs.manifest_branch || 'default') }} [${{ github.ref_name }}]"
+run-name: "Build: ${{ inputs.build_name }} [${{ github.ref_name }}]"
 
 on:
-  push: 
   workflow_dispatch:
     inputs:
+      build_name:
+        description: "Device & Build ID (e.g., komodo-cp1a)"
+        required: true
+        default: "Pixel GKI android14-6.1"
+        type: string
       ota_url:
         description: "Full OTA ZIP URL"
-        required: false
-        default: "https://dl.google.com/dl/android/aosp/komodo-ota-cp1a.260405.005-62a6d5ce.zip"
+        required: true
+        default: "*enter url or run will fail*"
         type: string
       manifest_branch:
         description: "Kernel manifest branch"
-        required: false
+        required: true
         default: "common-android14-6.1-2026-03"
         type: string
 
 env:
   MANIFEST_URL: https://android.googlesource.com/kernel/manifest
-  MANIFEST_BRANCH: ${{ inputs.manifest_branch || 'common-android14-6.1-2026-03' }}
-  OTA_URL: ${{ inputs.ota_url || 'https://dl.google.com/dl/android/aosp/komodo-ota-cp1a.260405.005-62a6d5ce.zip' }}
+  MANIFEST_BRANCH: ${{ inputs.manifest_branch }}
+  OTA_URL: ${{ inputs.ota_url }}
 
 jobs:
   build:

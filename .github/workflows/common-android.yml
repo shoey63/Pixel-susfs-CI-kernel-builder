@@ -60,7 +60,6 @@ jobs:
 
       - name: Install system dependencies
         run: |
-          sudo apt-get update
           sudo apt-get install -y git curl unzip zip bc bison flex libssl-dev python3 file xz-utils cpio
           chmod +x ./tools/magiskboot || true
 

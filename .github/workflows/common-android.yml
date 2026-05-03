@@ -86,7 +86,7 @@ jobs:
       - name: Integrate SUSFS common-side
         env:
           SUSFS_NEXT_URL: https://gitlab.com/simonpunk/susfs4ksu.git # <-- Updated
-          SUSFS_NEXT_REF: gki-android15-6.6 # <-- Updated
+          SUSFS_NEXT_REF: gki-android14-6.1-dev # <-- Updated
         run: |
           bash ./scripts/integrate_susfs_next.sh
           

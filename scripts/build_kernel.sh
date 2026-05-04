@@ -33,10 +33,10 @@ if [ -z "${IMAGE_PATH}" ] || [ ! -f "${IMAGE_PATH}" ]; then
   exit 1
 fi
 
-echo ">>> Extracting compiled kernel version string..."
-strings ../out/Image | grep "Linux version" | head -n 1
-
 echo ">>> Selected Image: ${IMAGE_PATH}"
 cp -f "${IMAGE_PATH}" ../out/Image
+
+echo ">>> Extracting compiled kernel version string..."
+strings ../out/Image | grep "Linux version" | head -n 1
 
 echo ">>> Build complete!"

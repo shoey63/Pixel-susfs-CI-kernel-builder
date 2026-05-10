@@ -22,12 +22,6 @@ on:
         default: "common-android14-6.1-2025-09"
         type: string
 
-      susfs_branch:
-        description: "SUSFS Branch (Use default for P6-P9; use gki-android15-6.6-dev for P10 series)"
-        required: false
-        default: "gki-android14-6.1-dev"
-        type: string
-        
 env:
   MANIFEST_URL: https://android.googlesource.com/kernel/manifest
   MANIFEST_BRANCH: ${{ inputs.manifest_branch }}

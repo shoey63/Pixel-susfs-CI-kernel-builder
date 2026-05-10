@@ -107,8 +107,8 @@ jobs:
 
       - name: Run Custom Patches
         run: |
-          # Check if file exists and has content beyond just a shebang
-          if [ -s "scripts/custom_patches.sh" ] && [ $(grep -c "[^[:space:]]" scripts/custom_patches.sh) -gt 1 ]; then
+          # Check if file exists and has executable content.
+          if [ -s "scripts/custom_patches.sh" ] && [ $(grep -v '^#' scripts/custom_patches.sh | grep -c "[^[:space:]]") -gt 0 ]; then
             echo ">>> Custom patch script detected. Applying modifications..."
             chmod +x scripts/custom_patches.sh
             ./scripts/custom_patches.sh

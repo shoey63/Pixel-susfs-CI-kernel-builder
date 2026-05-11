@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-cd common
+# Move into the workspace where the kernel source actually lives
+cd kernel_workspace/common || { echo ">>> ERROR: kernel_workspace/common not found"; exit 1; }
+
+echo ">>> Injecting WireGuard into gki_defconfig..."
+
+GKI_CONF="arch/arm64/configs/gki_defconfig"
 
 echo ">>> Forcing WireGuard + Tunneling Dependencies..."
 

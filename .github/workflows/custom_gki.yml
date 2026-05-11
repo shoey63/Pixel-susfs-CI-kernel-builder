@@ -74,16 +74,16 @@ jobs:
       - name: Sync kernel source
         run: |
           set -euo pipefail
-          rm -rf kernel_workspace
-          mkdir -p kernel_workspace
-          cd kernel_workspace
+          rm -rf kernel_workspace && mkdir -p kernel_workspace && cd kernel_workspace
           repo init -u "$MANIFEST_URL" -b "$MANIFEST_BRANCH" --depth=1
           repo sync -c --no-tags --no-clone-bundle --current-branch --fail-fast -j$(nproc)
           
-          # Capture the PURE Google hash
+          # Capture the PURE Google hash AND the official Unix timestamp
           cd common
           echo "OFFICIAL_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
-          echo ">>> Captured Official Google Hash: $(git rev-parse --short HEAD)"
+          echo "OFFICIAL_DATE=$(git log -1 --format=%ct)" >> $GITHUB_ENV
+          echo ">>> Captured Hash: $(git rev-parse --short HEAD)"
+          echo ">>> Captured Date: $(git log -1 --format=%ct)"
 
       - name: Integrate KernelSU-Next
         env:
@@ -119,6 +119,9 @@ jobs:
           
       - name: Build common kernel Image
         run: |
+          # Export captured variables for the script to use
+          export OFFICIAL_HASH=${{ env.OFFICIAL_HASH }}
+          export OFFICIAL_DATE=${{ env.OFFICIAL_DATE }}
           bash ./scripts/build_kernel.sh
 
       - name: Pull stock boot.img from OTA

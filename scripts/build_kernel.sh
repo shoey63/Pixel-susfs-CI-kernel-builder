@@ -14,7 +14,7 @@ for f in common/android/abi_gki_protected_exports*; do
   fi
 done
 
-# ====================== WIREGUARD SUPPORT ======================
+# ================ WIREGUARD SUPPORT =================
 echo ">>> Setting up WireGuard defconfig fragment..."
 
 cd common
@@ -32,9 +32,9 @@ echo 'exports_files(["wireguard_fragment"])' >> BUILD.bazel
 
 echo ">>> WireGuard fragment created:"
 cat wireguard_fragment
-echo ">>> ---------------------------------------------------"
+echo ">>> --------------------------------------------"
 cd ..
-# ============================================================
+# ====================================================
 
 echo ">>> Marking repo as clean..."
 cd common
@@ -43,16 +43,17 @@ cd ..
 
 echo ">>> Collecting Latest Hash and Commencing build: g$OFFICIAL_HASH"
 
+# The flag must stay BEFORE the -- so Bazel handles the fragment during the build
 tools/bazel run --config=local --config=stamp \
   --action_env=SOURCE_DATE_EPOCH="$OFFICIAL_DATE" \
   --action_env=STABLE_BUILD_VERSION="g$OFFICIAL_HASH" \
   --action_env=KLEAF_KERNEL_BUILD_VERSION="g$OFFICIAL_HASH" \
   --action_env=KLEAF_SKIP_ABI_CHECKS=true \
+  --post_defconfig_fragments=//common:wireguard_fragment \
   //common:kernel_aarch64_dist \
   -- \
-  --post_defconfig_fragments=//common:wireguard_fragment \
   --destdir=out/dist
-
+  
 IMAGE_PATH="$(find out/dist -type f -name 'Image' | head -n1)"
 
 if [ -z "\( {IMAGE_PATH}" ] || [ ! -f " \){IMAGE_PATH}" ]; then

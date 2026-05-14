@@ -11,7 +11,7 @@ This pipeline is modular by design, allowing developers to inject root solutions
 * **Rejection Resolution:** Built-in hooks to automatically resolve known SUSFS patch rejections in the common tree.
 * **Environment Sanitizing:** Neutralizes ABI protected exports and uses the official Google commit hash and Unix timestamp to facilitate build environment and kernel string integrity.
 * **WireGuard Support:** Optional native WireGuard integration with ARM64 hardware crypto acceleration and Android Netd routing hooks.
-* **OTA Payload Extraction:** Validates and downloads full OTA ZIPs, extracting `boot` or `init_boot` partitions via `payload_dumper`.
+* **Targeted Payload Extraction:** Scans the remote OTA URL and streams only the `boot` partition directly from the source via `payload_dumper`, completely bypassing the need to download the massive multi-gigabyte OTA ZIP.
 * **Automated Repacking:** Hot-swaps the compiled kernel `Image` into the stock boot image using `magiskboot`.
 
 ## Workflow Inputs

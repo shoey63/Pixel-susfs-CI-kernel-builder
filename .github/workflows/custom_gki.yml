@@ -101,8 +101,8 @@ jobs:
       - name: Integrate KernelSU-Next
         if: inputs.enable_ksu_susfs == true
         env:
-          KSU_NEXT_SETUP_URL: https://raw.githubusercontent.com/pershoot/KernelSU-Next/dev/kernel/setup.sh
-          KSU_NEXT_REPO_URL: https://github.com/pershoot/KernelSU-Next.git
+          KSU_NEXT_SETUP_URL: https://raw.githubusercontent.com/shoey63/KernelSU/dev-susfs/kernel/setup.sh
+          KSU_NEXT_REPO_URL: https://github.com/shoey63/KernelSU.git
           KSU_NEXT_REF: dev-susfs
           KSU_NEXT_HOOK_MODE: ""
         run: |
